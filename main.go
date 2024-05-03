@@ -5,40 +5,14 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"time"
 
-	"github.com/hashicorp/vault-client-go"
-	"github.com/hashicorp/vault-client-go/schema"
+	vault "example.com/vault-go/utils"
+
 	"github.com/joho/godotenv"
 )
 
 var mountPath string = "secret"
 var vaultPath string = "kubernetes-test"
-
-func initializeVaultCient(address string) (*vault.Client, error) {
-	vaultClient, err := vault.New(
-		vault.WithAddress(address),
-		vault.WithRequestTimeout(30*time.Second),
-	)
-	if err != nil {
-		return nil, err
-	}
-	return vaultClient, nil
-}
-
-func writeSecret(ctx context.Context, client *vault.Client) {
-	_, err := client.Secrets.KvV2Write(ctx, vaultPath, schema.KvV2WriteRequest{
-		Data: map[string]any{
-			"password1": "abc123",
-			"password2": "correct horse battery staple",
-		}},
-		vault.WithMountPath(mountPath),
-	)
-	if err != nil {
-		log.Fatal(err)
-	}
-	log.Println("secret written successfully")
-}
 
 func main() {
 
@@ -46,7 +20,7 @@ func main() {
 	vaultAddress := os.Getenv("vaultAddress")
 	vaultToken := os.Getenv("vaultToken")
 	ctx := context.Background()
-	client, _ := initializeVaultCient(vaultAddress)
+	client, _ := vault.InitializeVaultCient(vaultAddress)
 
 	if err != nil {
 		log.Fatal("Error loading .env file")
@@ -58,6 +32,6 @@ func main() {
 		panic(err)
 	}
 	fmt.Println("Vault client initialized")
-	writeSecret(ctx, client)
+	vault.WriteSecret(ctx, client, vaultPath)
 
 }

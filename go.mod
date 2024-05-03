@@ -1,4 +1,4 @@
-module vault-go
+module example.com/vault-go
 
 go 1.22.1
 
