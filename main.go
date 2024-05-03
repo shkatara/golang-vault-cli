@@ -41,17 +41,18 @@ func writeSecret(ctx context.Context, client *vault.Client) {
 }
 
 func main() {
+
+	err := godotenv.Load()
 	vaultAddress := os.Getenv("vaultAddress")
 	vaultToken := os.Getenv("vaultToken")
 	ctx := context.Background()
 	client, _ := initializeVaultCient(vaultAddress)
 
-	err := godotenv.Load()
 	if err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
-	client.SetToken(vaultToken)
+	err = client.SetToken(vaultToken)
 	if err != nil {
 		log.Println("Error initializing vault Client. Vault is not authenticated. Please login to vault using 'vault login -address", vaultAddress)
 		panic(err)
