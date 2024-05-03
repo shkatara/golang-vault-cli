@@ -1,7 +1,8 @@
-package utils
+package vault
 
 import (
 	"context"
+	"log"
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
@@ -19,7 +20,7 @@ func InitializeVaultCient(address string) (*vault.Client, error) {
 	return vaultClient, nil
 }
 
-func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string) error {
+func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string) {
 	_, err := client.Secrets.KvV2Write(ctx, vaultPath, schema.KvV2WriteRequest{
 		Data: map[string]any{
 			"password1": "abcasdasda123",
@@ -28,7 +29,7 @@ func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string) er
 		vault.WithMountPath("secret"),
 	)
 	if err != nil {
-		return err
+		log.Fatal(err)
 	}
-	return nil
+	log.Println("secret written successfully")
 }
