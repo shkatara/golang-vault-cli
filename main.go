@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"flag"
 	"log"
 	"os"
 
@@ -12,7 +13,10 @@ import (
 	"github.com/joho/godotenv"
 )
 
-var vaultPath string = "kubernetes-test"
+var (
+	vaultPath string = "kubernetes-test"
+	domain    string
+)
 
 func init_info() (context.Context, *vault.Client) {
 	err := godotenv.Load()
@@ -31,7 +35,9 @@ func init_info() (context.Context, *vault.Client) {
 	return ctx, client
 }
 func main() {
+	flag.StringVar(&domain, "domain", domain, "Directory to read metrics from")
+	flag.Parse()
 	ctx, client := init_info()
-	vault_utils.WriteSecret(ctx, client, vaultPath)
+	vault_utils.WriteSecret(ctx, client, vaultPath, domain)
 
 }

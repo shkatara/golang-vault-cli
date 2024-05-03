@@ -19,7 +19,7 @@ func InitializeVaultCient(address string) (*vault.Client, error) {
 	return vaultClient, nil
 }
 
-func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string) error {
+func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string, certsDir string) error {
 	_, err := client.Secrets.KvV2Write(ctx, vaultPath, schema.KvV2WriteRequest{
 		Data: map[string]any{
 			"password1": "abcasdasda123",

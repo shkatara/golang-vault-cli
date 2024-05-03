@@ -3,11 +3,14 @@ package vault
 import (
 	"context"
 	"log"
+	"os"
 	"time"
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
 )
+
+var certsDir string = "certs"
 
 func InitializeVaultCient(address string) (*vault.Client, error) {
 	vaultClient, err := vault.New(
@@ -20,11 +23,18 @@ func InitializeVaultCient(address string) (*vault.Client, error) {
 	return vaultClient, nil
 }
 
-func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string) {
+func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string, domain string) {
+
+	serverCrt, _ := os.ReadFile(certsDir + "/" + domain + ".crt")
+	intermediate, _ := os.ReadFile(certsDir + "/" + domain + ".intermediate")
+	key, _ := os.ReadFile(certsDir + "/" + domain + ".key")
+	log.Print(string(serverCrt))
+
 	_, err := client.Secrets.KvV2Write(ctx, vaultPath, schema.KvV2WriteRequest{
 		Data: map[string]any{
-			"password1": "abcasdasda123",
-			"password2": "correct horse battery staple",
+			domain + ".crt":          string(serverCrt),
+			domain + ".intermediate": string(intermediate),
+			domain + ".key":          string(key),
 		}},
 		vault.WithMountPath("secret"),
 	)
