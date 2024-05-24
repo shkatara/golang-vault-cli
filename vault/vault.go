@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/vault-client-go"
 	"github.com/hashicorp/vault-client-go/schema"
+	"github.com/joho/godotenv"
 )
 
 var certsDir string = "certs"
@@ -23,23 +24,25 @@ func InitializeVaultCient(address string) (*vault.Client, error) {
 	return vaultClient, nil
 }
 
-func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string, domain string) {
-
-	serverCrt, _ := os.ReadFile(certsDir + "/" + domain + ".crt")
-	intermediate, _ := os.ReadFile(certsDir + "/" + domain + ".intermediate")
-	key, _ := os.ReadFile(certsDir + "/" + domain + ".key")
-	log.Print(string(serverCrt))
+func WriteSecret(ctx context.Context, client *vault.Client, vaultPath string, vaultMount string, domain string) {
+	godotenv.Load()
+	serverCrt, _ := os.ReadFile(certsDir + "/" + domain + "_server.crt")
+	intermediate, _ := os.ReadFile(certsDir + "/" + domain + "_intermediate.crt")
+	root, _ := os.ReadFile(certsDir + "/" + domain + "_root.crt")
+	key, _ := os.ReadFile(certsDir + "/" + domain + "_server.key")
 
 	_, err := client.Secrets.KvV2Write(ctx, vaultPath, schema.KvV2WriteRequest{
 		Data: map[string]any{
-			domain + ".crt":          string(serverCrt),
-			domain + ".intermediate": string(intermediate),
-			domain + ".key":          string(key),
+			domain + "_server.crt":       string(serverCrt),
+			domain + "_intermediate.crt": string(intermediate),
+			domain + "_root.crt":         string(root),
+			domain + "_server.key":       string(key),
 		}},
-		vault.WithMountPath("secret"),
+		vault.WithMountPath(vaultMount),
 	)
 	if err != nil {
+		log.Println("Error writing secret to vault")
 		log.Fatal(err)
 	}
-	log.Println("secret written successfully")
+	log.Println("Secret for domain", domain, "written successfully to", os.Getenv("vaultAddress"))
 }
